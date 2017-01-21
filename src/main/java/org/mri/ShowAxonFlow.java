@@ -4,6 +4,10 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.args4j.*;
 import org.kohsuke.args4j.spi.StringArrayOptionHandler;
+import org.mri.output.DotFormat;
+import org.mri.output.OutputFormat;
+import org.mri.output.PlantUmlFormat;
+import org.mri.output.ToStringFormat;
 import org.mri.processors.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +27,11 @@ import java.util.Set;
 
 public class ShowAxonFlow {
     enum Format {
-        DEFAULT, PLANTUML, DOT;
+        DEFAULT { public OutputFormat printer() { return new ToStringFormat(); }},
+        PLANTUML { public OutputFormat printer() { return new PlantUmlFormat(); }},
+        DOT { public OutputFormat printer() { return new DotFormat(); }};
+
+        public OutputFormat printer() { throw new UnsupportedOperationException(); }
     }
 
     private static Logger logger = LoggerFactory.getLogger(ShowAxonFlow.class);
@@ -126,20 +134,11 @@ public class ShowAxonFlow {
             printStream.println("No method containing `" + methodName + "` found.");
         }
         AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(classHierarchy, callList, eventHandlers, commandHandlers, aggregates, matchEventsByName);
-        List<AxonNode> axonNodes = axonFlowBuilder.buildFlow(methodReferences);
-        for (AxonNode axonNode : axonNodes) {
-            switch (format) {
-                case PLANTUML:
-                    axonNode.printPlantUML(printStream);
-                    break;
-                case DOT:
-                    axonNode.printDot(printStream);
-                    break;
-                default:
-                    axonNode.print(printStream);
-                    break;
-            }
+        List<AxonNode> flow = axonFlowBuilder.buildFlow(methodReferences);
+
+        OutputFormat printer = format.printer();
+        for (AxonNode node : flow) {
+            printer.print(node, printStream);
         }
     }
-
 }

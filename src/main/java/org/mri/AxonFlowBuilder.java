@@ -1,7 +1,6 @@
 package org.mri;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import org.mri.repositories.AggregatesRepository;
 import org.mri.repositories.CommandHandlersRepository;
 import spoon.reflect.reference.CtExecutableReference;
@@ -38,8 +37,7 @@ public class AxonFlowBuilder {
     }
 
     private void buildCommandFlow(AxonNode node) {
-        MethodCall methodCall = this.callHierarchyBuilder.buildCalleesMethodHierarchy(node.reference());
-        for (MethodCall call : callsWhereCalleeIsACommand(methodCall.asList())) {
+        for (MethodCall call : this.callHierarchyBuilder.matchingCallsInBlock(node.reference(), calleeIs(aCommand()))) {
             CtExecutableReference callee = call.reference();
             CtTypeReference command = callee.getDeclaringType();
 
@@ -56,25 +54,9 @@ public class AxonFlowBuilder {
         }
     }
 
-    private Iterable<MethodCall> callsWhereCalleeIsACommand(List<MethodCall> calls) {
-        return Iterables.filter(calls, calleeIsACommand());
-    }
-
-    private Predicate<MethodCall> calleeIsACommand() {
-        return new Predicate<MethodCall>() {
-            @Override
-            public boolean apply(MethodCall input) {
-                CtTypeReference callee = input.reference().getDeclaringType();
-                return commandHandlersRepository.isCommand(callee);
-            }
-        };
-    }
-
     private void buildAggregateFlow(AxonNode node) {
-        MethodCall methodCall = this.callHierarchyBuilder.buildCalleesMethodHierarchy(node.reference());
-
-        for (MethodCall aggregateCall : callsWhereCalleeIsAnAggregate(methodCall.asList())) {
-            AxonNode aggregateNode = new AxonNode(AxonNode.Type.AGGREGATE, aggregateCall.reference());
+        for (MethodCall call : this.callHierarchyBuilder.matchingCallsInBlock(node.reference(), calleeIs(anAggregate()))) {
+            AxonNode aggregateNode = new AxonNode(AxonNode.Type.AGGREGATE, call.reference());
             buildEventFlow(aggregateNode);
             if (aggregateNode.hasChildren()) {
                 node.add(aggregateNode);
@@ -82,26 +64,8 @@ public class AxonFlowBuilder {
         }
     }
 
-    private Iterable<MethodCall> callsWhereCalleeIsAnAggregate(List<MethodCall> calls) {
-        return Iterables.filter(calls, calleeIsAnAggregate());
-    }
-
-    private Predicate<? super MethodCall> calleeIsAnAggregate() {
-        return new Predicate<MethodCall>() {
-            @Override
-            public boolean apply(MethodCall input) {
-                CtTypeReference callee = input.reference().getDeclaringType();
-                return aggregatesRepository.isAggregate(callee);
-            }
-        };
-    }
-
     private AxonNode buildEventFlow(AxonNode node) {
-        MethodCall methodCall = this.callHierarchyBuilder.buildCalleesMethodHierarchy(node.reference());
-
-        Iterable<MethodCall> eventConstructionInstances =
-                Iterables.filter(methodCall.asList(), eventHandlerIdentificationStrategy.isEventPredicate());
-        for (MethodCall eventConstruction : eventConstructionInstances) {
+        for (MethodCall eventConstruction : this.callHierarchyBuilder.matchingCallsInBlock(node.reference(), calleeIs(anEvent()))) {
             AxonNode eventNode = new AxonNode(AxonNode.Type.EVENT, eventConstruction.reference());
             node.add(eventNode);
             for (CtMethodImpl eventHandler : eventHandlerIdentificationStrategy.findEventHandlers(eventNode.reference().getDeclaringType())) {
@@ -111,5 +75,42 @@ public class AxonFlowBuilder {
             }
         }
         return node;
+    }
+
+    private Predicate<CtTypeReference> anEvent() {
+        return new Predicate<CtTypeReference>() {
+            @Override
+            public boolean apply(CtTypeReference callee) {
+                return eventHandlerIdentificationStrategy.isAnEvent(callee);
+            }
+        };
+    }
+
+    private Predicate<MethodCall> calleeIs(final Predicate<CtTypeReference> calleeSpecification) {
+        return new Predicate<MethodCall>() {
+            @Override
+            public boolean apply(MethodCall input) {
+                CtTypeReference callee = input.reference().getDeclaringType();
+                return calleeSpecification.apply(callee);
+            }
+        };
+    }
+
+    private Predicate<CtTypeReference> aCommand() {
+        return new Predicate<CtTypeReference>() {
+            @Override
+            public boolean apply(CtTypeReference callee) {
+                return commandHandlersRepository.isCommand(callee);
+            }
+        };
+    }
+
+    private Predicate<CtTypeReference> anAggregate() {
+        return new Predicate<CtTypeReference>() {
+            @Override
+            public boolean apply(CtTypeReference callee) {
+                return aggregatesRepository.isAggregate(callee);
+            }
+        };
     }
 }

@@ -1,5 +1,7 @@
 package org.mri;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 
@@ -25,7 +27,12 @@ public class MethodCallHierarchyBuilder {
         return result;
     }
 
-    static List<CtExecutableReference> findExecutablesForMethodName(String methodName, Map<MethodWrapper, List<CtExecutableReference>> callList) {
+    public Iterable<MethodCall> matchingCallsInBlock(CtExecutableReference block, Predicate<MethodCall> predicate) {
+        MethodCall call = buildCalleesMethodHierarchy(block);
+        return Iterables.filter(call.asList(), predicate);
+    }
+
+    private static List<CtExecutableReference> findExecutablesForMethodName(String methodName, Map<MethodWrapper, List<CtExecutableReference>> callList) {
         ArrayList<CtExecutableReference> result = new ArrayList<>();
         for (MethodWrapper methodWrapper : callList.keySet()) {
             CtExecutableReference executableReference = methodWrapper.method().getReference();
@@ -39,7 +46,7 @@ public class MethodCallHierarchyBuilder {
         return result;
     }
 
-    public MethodCall buildCalleesMethodHierarchy(CtExecutableReference executableReference) {
+    private MethodCall buildCalleesMethodHierarchy(CtExecutableReference executableReference) {
         MethodCall methodCall = new MethodCall(executableReference);
         buildCallHierarchy(executableReference, new HashSet<CtExecutableReference>(), methodCall);
         return methodCall;

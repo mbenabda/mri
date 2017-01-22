@@ -1,14 +1,14 @@
 package org.mri;
 
-
-import com.google.common.base.Predicate;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.declaration.CtMethodImpl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class EventHandlerIdentificationByNameStrategy implements EventHandlerIdentificationStrategy {
-
 
     private final HashMap<String, List<CtMethodImpl>> eventHandlerByNames = new HashMap<>();
 
@@ -24,24 +24,12 @@ public class EventHandlerIdentificationByNameStrategy implements EventHandlerIde
     }
 
     @Override
-    public Predicate<MethodCall> isEventPredicate() {
-        return matchEventsByNamePredicate();
-    }
-
-    @Override
     public List<CtMethodImpl> findEventHandlers(CtTypeReference type) {
-
         return eventHandlerByNames.get(type.getSimpleName());
     }
 
-    private Predicate<MethodCall> matchEventsByNamePredicate() {
-        final Set<String> eventHandlerNames = eventHandlerByNames.keySet();
-        return new Predicate<MethodCall>() {
-            @Override
-            public boolean apply(final MethodCall input) {
-                return eventHandlerNames.contains(input.reference().getDeclaringType().getSimpleName());
-            }
-        };
+    @Override
+    public boolean isAnEvent(CtTypeReference candidate) {
+        return eventHandlerByNames.containsKey(candidate.getSimpleName());
     }
-
 }

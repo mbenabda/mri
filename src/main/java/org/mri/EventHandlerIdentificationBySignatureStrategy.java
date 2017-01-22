@@ -1,7 +1,5 @@
 package org.mri;
 
-
-import com.google.common.base.Predicate;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.declaration.CtMethodImpl;
 
@@ -17,22 +15,12 @@ public class EventHandlerIdentificationBySignatureStrategy implements EventHandl
     }
 
     @Override
-    public Predicate<MethodCall> isEventPredicate() {
-        return matchEventsBySignaturePredicate();
-    }
-
-    @Override
     public List<CtMethodImpl> findEventHandlers(CtTypeReference type) {
         return this.eventHandlers.get(type);
     }
 
-    private Predicate<MethodCall> matchEventsBySignaturePredicate() {
-        return new Predicate<MethodCall>() {
-            @Override
-            public boolean apply(final MethodCall input) {
-                return eventHandlers.keySet().contains(input.reference().getDeclaringType());
-            }
-        };
+    @Override
+    public boolean isAnEvent(CtTypeReference candidate) {
+        return eventHandlers.containsKey(candidate);
     }
-
 }

@@ -9,6 +9,7 @@ import org.mri.output.OutputFormat;
 import org.mri.output.PlantUmlFormat;
 import org.mri.output.ToStringFormat;
 import org.mri.processors.*;
+import org.mri.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
@@ -113,21 +114,29 @@ public class ShowAxonFlow {
             throw new RuntimeException("You most likely have not specified your classpath. Pass it in using either '--claspath' or '--classpath-file'.", e);
         }
 
-        printCallHierarchy(launcher, printStream);
+        printAxonFlow(launcher, printStream);
     }
 
-    private void printCallHierarchy(Launcher launcher, PrintStream printStream) throws Exception {
+    private void printAxonFlow(Launcher launcher, PrintStream printStream) throws Exception {
+        ClassHierarchyRepository classHierarchyRepository = new ClassHierarchyRepository();
+        MethodExecutionRepository methodExecutionRepository = new MethodExecutionRepository();
+        EventHandlersRepository eventHandlersRepository = new EventHandlersRepository();
+        CommandHandlersRepository commandHandlersRepository = new CommandHandlersRepository();
+        AggregatesRepository aggregatesRepository = new AggregatesRepository();
+
         QueueProcessingManager queueProcessingManager = new QueueProcessingManager(launcher.getFactory());
-        Map<CtTypeReference, Set<CtTypeReference>> classHierarchy =
-                new ClassHierarchyBuilder().build(queueProcessingManager);
-        Map<MethodWrapper, List<CtExecutableReference>> callList =
-                new MethodExecutionBuilder().build(queueProcessingManager);
-        final Map<CtTypeReference, List<CtMethodImpl>> eventHandlers =
-                new EventHandlersFinder()
-                        .all(queueProcessingManager);
-        final Map<CtTypeReference, CtMethodImpl> commandHandlers =
-                new CommandHandlersFinder().all(queueProcessingManager);
-        List<CtTypeReference> aggregates = new AggregatesFinder().all(queueProcessingManager);
+        queueProcessingManager.addProcessor(new ClassHierarcyProcessor(classHierarchyRepository));
+        queueProcessingManager.addProcessor(new MethodExecutionProcessor(methodExecutionRepository));
+        queueProcessingManager.addProcessor(new EventHandlersProcessor(eventHandlersRepository));
+        queueProcessingManager.addProcessor(new CommandHandlersProcessor(commandHandlersRepository));
+        queueProcessingManager.addProcessor(new AggregatesProcessor(aggregatesRepository));
+        queueProcessingManager.process();
+
+        Map<CtTypeReference, Set<CtTypeReference>> classHierarchy = classHierarchyRepository.findAll();
+        Map<MethodWrapper, List<CtExecutableReference>> callList = methodExecutionRepository.findAll();
+        Map<CtTypeReference, List<CtMethodImpl>> eventHandlers = eventHandlersRepository.findAll();
+        Map<CtTypeReference, CtMethodImpl> commandHandlers = commandHandlersRepository.findAll();
+        List<CtTypeReference> aggregates = aggregatesRepository.findAll();
 
         ArrayList<CtExecutableReference> methodReferences = MethodCallHierarchyBuilder.forMethodName(methodName, callList, classHierarchy);
         if (methodReferences.isEmpty()) {

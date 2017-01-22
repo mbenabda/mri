@@ -11,22 +11,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AxonFlowBuilder {
-    private final EventHandlerIdentificationStrategy eventHandlerIdentificationStrategy;
-    private final MethodCallHierarchyBuilder callHierarchyBuilder;
-    private AggregatesRepository aggregatesRepository;
-    private final CommandHandlersRepository commandHandlersRepository;
+    private final EventHandlerIdentificationStrategy eventHandlers;
+    private final MethodCallsHierarchyBuilder methodCallsHierarchy;
+    private AggregatesRepository aggregates;
+    private final CommandHandlersRepository commandHandlers;
 
-    public AxonFlowBuilder(MethodCallHierarchyBuilder callHierarchyBuilder,
+    public AxonFlowBuilder(MethodCallsHierarchyBuilder methodCallsHierarchy,
                            EventHandlerIdentificationStrategy eventHandlers,
-                           CommandHandlersRepository commandHandlersRepository,
-                           AggregatesRepository aggregatesRepository) {
-        this.eventHandlerIdentificationStrategy = eventHandlers;
-        this.commandHandlersRepository = commandHandlersRepository;
-        this.callHierarchyBuilder = callHierarchyBuilder;
-        this.aggregatesRepository = aggregatesRepository;
+                           CommandHandlersRepository commandHandlers,
+                           AggregatesRepository aggregates) {
+        this.eventHandlers = eventHandlers;
+        this.commandHandlers = commandHandlers;
+        this.methodCallsHierarchy = methodCallsHierarchy;
+        this.aggregates = aggregates;
     }
 
-    List<AxonNode> buildFlow(ArrayList<CtExecutableReference> methodReferences) {
+    List<AxonNode> buildFlow(String methodName) throws MethodNotFoundException {
+        ArrayList<CtExecutableReference> methodReferences = methodCallsHierarchy.referencesOfMethod(methodName);
+        if (methodReferences.isEmpty()) {
+            throw new MethodNotFoundException(methodName);
+        }
+
         List<AxonNode> nodes = new ArrayList<>();
         for (CtExecutableReference each : methodReferences) {
             AxonNode root = new AxonNode(AxonNode.Type.CONTROLLER, each);
@@ -37,15 +42,15 @@ public class AxonFlowBuilder {
     }
 
     private void buildCommandFlow(AxonNode node) {
-        for (MethodCall call : this.callHierarchyBuilder.matchingCallsInBlock(node.reference(), calleeIs(aCommand()))) {
-            CtExecutableReference callee = call.reference();
-            CtTypeReference command = callee.getDeclaringType();
+        for (MethodCall call : this.methodCallsHierarchy.callsInBlock(node.reference(), declaredIn(aCommand()))) {
+            CtExecutableReference callReference = call.reference();
+            CtTypeReference command = call.getDeclaringType();
 
-            AxonNode commandConstructionNode = new AxonNode(AxonNode.Type.COMMAND, callee);
+            AxonNode commandConstructionNode = new AxonNode(AxonNode.Type.COMMAND, callReference);
             node.add(commandConstructionNode);
             AxonNode commandHandlerNode = new AxonNode(
                 AxonNode.Type.COMMAND_HANDLER,
-                commandHandlersRepository
+                commandHandlers
                     .handlerOfCommand(command)
                     .getReference()
             );
@@ -55,7 +60,7 @@ public class AxonFlowBuilder {
     }
 
     private void buildAggregateFlow(AxonNode node) {
-        for (MethodCall call : this.callHierarchyBuilder.matchingCallsInBlock(node.reference(), calleeIs(anAggregate()))) {
+        for (MethodCall call : this.methodCallsHierarchy.callsInBlock(node.reference(), declaredIn(anAggregate()))) {
             AxonNode aggregateNode = new AxonNode(AxonNode.Type.AGGREGATE, call.reference());
             buildEventFlow(aggregateNode);
             if (aggregateNode.hasChildren()) {
@@ -65,10 +70,10 @@ public class AxonFlowBuilder {
     }
 
     private AxonNode buildEventFlow(AxonNode node) {
-        for (MethodCall eventConstruction : this.callHierarchyBuilder.matchingCallsInBlock(node.reference(), calleeIs(anEvent()))) {
+        for (MethodCall eventConstruction : this.methodCallsHierarchy.callsInBlock(node.reference(), declaredIn(anEvent()))) {
             AxonNode eventNode = new AxonNode(AxonNode.Type.EVENT, eventConstruction.reference());
             node.add(eventNode);
-            for (CtMethodImpl eventHandler : eventHandlerIdentificationStrategy.findEventHandlers(eventNode.reference().getDeclaringType())) {
+            for (CtMethodImpl eventHandler : eventHandlers.findEventHandlers(eventNode.reference().getDeclaringType())) {
                 AxonNode eventHandlerNode = new AxonNode(AxonNode.Type.EVENT_LISTENER, eventHandler.getReference());
                 eventNode.add(eventHandlerNode);
                 buildCommandFlow(eventHandlerNode);
@@ -77,21 +82,11 @@ public class AxonFlowBuilder {
         return node;
     }
 
-    private Predicate<CtTypeReference> anEvent() {
-        return new Predicate<CtTypeReference>() {
-            @Override
-            public boolean apply(CtTypeReference callee) {
-                return eventHandlerIdentificationStrategy.isAnEvent(callee);
-            }
-        };
-    }
-
-    private Predicate<MethodCall> calleeIs(final Predicate<CtTypeReference> calleeSpecification) {
+    private Predicate<MethodCall> declaredIn(final Predicate<CtTypeReference> declaringTypeSpecification) {
         return new Predicate<MethodCall>() {
             @Override
-            public boolean apply(MethodCall input) {
-                CtTypeReference callee = input.reference().getDeclaringType();
-                return calleeSpecification.apply(callee);
+            public boolean apply(MethodCall call) {
+                return declaringTypeSpecification.apply(call.getDeclaringType());
             }
         };
     }
@@ -99,8 +94,8 @@ public class AxonFlowBuilder {
     private Predicate<CtTypeReference> aCommand() {
         return new Predicate<CtTypeReference>() {
             @Override
-            public boolean apply(CtTypeReference callee) {
-                return commandHandlersRepository.isCommand(callee);
+            public boolean apply(CtTypeReference type) {
+                return commandHandlers.isCommand(type);
             }
         };
     }
@@ -108,8 +103,17 @@ public class AxonFlowBuilder {
     private Predicate<CtTypeReference> anAggregate() {
         return new Predicate<CtTypeReference>() {
             @Override
-            public boolean apply(CtTypeReference callee) {
-                return aggregatesRepository.isAggregate(callee);
+            public boolean apply(CtTypeReference type) {
+                return aggregates.isAggregate(type);
+            }
+        };
+    }
+
+    private Predicate<CtTypeReference> anEvent() {
+        return new Predicate<CtTypeReference>() {
+            @Override
+            public boolean apply(CtTypeReference type) {
+                return eventHandlers.isAnEvent(type);
             }
         };
     }

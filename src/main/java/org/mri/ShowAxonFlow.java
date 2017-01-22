@@ -14,16 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
 import spoon.compiler.ModelBuildingException;
-import spoon.reflect.reference.CtExecutableReference;
-import spoon.reflect.reference.CtTypeReference;
 import spoon.support.QueueProcessingManager;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class ShowAxonFlow {
     enum Format {
@@ -117,41 +112,38 @@ public class ShowAxonFlow {
     }
 
     private void printAxonFlow(Launcher launcher, PrintStream printStream) throws Exception {
-        ClassHierarchyRepository classHierarchyRepository = new ClassHierarchyRepository();
-        MethodExecutionRepository methodExecutionRepository = new MethodExecutionRepository();
-        EventHandlersRepository eventHandlersRepository = new EventHandlersRepository();
-        CommandHandlersRepository commandHandlersRepository = new CommandHandlersRepository();
-        AggregatesRepository aggregatesRepository = new AggregatesRepository();
+        ClassHierarchyRepository classHierarchy = new ClassHierarchyRepository();
+        MethodExecutionRepository methodExecutions = new MethodExecutionRepository();
+        EventHandlersRepository eventHandlers = new EventHandlersRepository();
+        CommandHandlersRepository commandHandlers = new CommandHandlersRepository();
+        AggregatesRepository aggregates = new AggregatesRepository();
 
         QueueProcessingManager queueProcessingManager = new QueueProcessingManager(launcher.getFactory());
-        queueProcessingManager.addProcessor(new ClassHierarcyProcessor(classHierarchyRepository));
-        queueProcessingManager.addProcessor(new MethodExecutionProcessor(methodExecutionRepository));
-        queueProcessingManager.addProcessor(new EventHandlersProcessor(eventHandlersRepository));
-        queueProcessingManager.addProcessor(new CommandHandlersProcessor(commandHandlersRepository));
-        queueProcessingManager.addProcessor(new AggregatesProcessor(aggregatesRepository));
+        queueProcessingManager.addProcessor(new ClassHierarcyProcessor(classHierarchy));
+        queueProcessingManager.addProcessor(new MethodExecutionProcessor(methodExecutions));
+        queueProcessingManager.addProcessor(new EventHandlersProcessor(eventHandlers));
+        queueProcessingManager.addProcessor(new CommandHandlersProcessor(commandHandlers));
+        queueProcessingManager.addProcessor(new AggregatesProcessor(aggregates));
         queueProcessingManager.process();
 
-        Map<CtTypeReference, Set<CtTypeReference>> classHierarchy = classHierarchyRepository.findAll();
-        Map<MethodWrapper, List<CtExecutableReference>> callList = methodExecutionRepository.findAll();
-
-        ArrayList<CtExecutableReference> methodReferences = MethodCallHierarchyBuilder.forMethodName(methodName, callList, classHierarchy);
-        if (methodReferences.isEmpty()) {
-            printStream.println("No method containing `" + methodName + "` found.");
-        }
-
         AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(
-            new MethodCallHierarchyBuilder(callList, classHierarchy),
+            new MethodCallsHierarchyBuilder(methodExecutions, classHierarchy),
             matchEventsByName
-                ? new EventHandlerIdentificationByNameStrategy(eventHandlersRepository.findAll())
-                : new EventHandlerIdentificationBySignatureStrategy(eventHandlersRepository.findAll()),
-            commandHandlersRepository,
-            aggregatesRepository
+                ? new EventHandlerIdentificationByNameStrategy(eventHandlers.findAll())
+                : new EventHandlerIdentificationBySignatureStrategy(eventHandlers.findAll()),
+            commandHandlers,
+            aggregates
         );
-        List<AxonNode> flow = axonFlowBuilder.buildFlow(methodReferences);
 
-        OutputFormat printer = format.printer();
-        for (AxonNode node : flow) {
-            printer.print(node, printStream);
+        try {
+            List<AxonNode> flow = axonFlowBuilder.buildFlow(methodName);
+
+            OutputFormat printer = format.printer();
+            for (AxonNode node : flow) {
+                printer.print(node, printStream);
+            }
+        } catch (MethodNotFoundException e) {
+            printStream.println("No method containing `" + methodName + "` found.");
         }
     }
 }

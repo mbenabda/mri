@@ -2,24 +2,23 @@ package org.mri;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import org.mri.repositories.ClassHierarchyRepository;
+import org.mri.repositories.MethodExecutionRepository;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 
 import java.util.*;
 
-public class MethodCallHierarchyBuilder {
+public class MethodCallsHierarchyBuilder {
     private final Map<MethodWrapper, List<CtExecutableReference>> callList;
     private final Map<CtTypeReference, Set<CtTypeReference>> classHierarchy;
 
-    public MethodCallHierarchyBuilder(Map<MethodWrapper, List<CtExecutableReference>> callList,
-                                      Map<CtTypeReference, Set<CtTypeReference>> classHierarchy) {
-        this.callList = callList;
-        this.classHierarchy = classHierarchy;
+    public MethodCallsHierarchyBuilder(MethodExecutionRepository methodExecutionRepository, ClassHierarchyRepository classHierarchyRepository) {
+        this.callList = methodExecutionRepository.findAll();
+        this.classHierarchy = classHierarchyRepository.findAll();
     }
 
-    public static ArrayList<CtExecutableReference> forMethodName(String methodName,
-                                                                 Map<MethodWrapper, List<CtExecutableReference>> callList,
-                                                                 Map<CtTypeReference, Set<CtTypeReference>> classHierarchy) {
+    public ArrayList<CtExecutableReference> referencesOfMethod(String methodName) {
         ArrayList<CtExecutableReference > result = new ArrayList<>();
         for (CtExecutableReference executableReference : findExecutablesForMethodName(methodName, callList)) {
             result.add(executableReference);
@@ -27,7 +26,7 @@ public class MethodCallHierarchyBuilder {
         return result;
     }
 
-    public Iterable<MethodCall> matchingCallsInBlock(CtExecutableReference block, Predicate<MethodCall> predicate) {
+    public Iterable<MethodCall> callsInBlock(CtExecutableReference block, Predicate<MethodCall> predicate) {
         MethodCall call = buildCalleesMethodHierarchy(block);
         return Iterables.filter(call.asList(), predicate);
     }

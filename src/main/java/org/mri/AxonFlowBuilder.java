@@ -3,6 +3,7 @@ package org.mri;
 import com.google.common.base.Predicate;
 import org.mri.repositories.AggregatesRepository;
 import org.mri.repositories.CommandHandlersRepository;
+import org.mri.repositories.eventHandlers.EventHandlersRepository;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.declaration.CtMethodImpl;
@@ -11,13 +12,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AxonFlowBuilder {
-    private final EventHandlerIdentificationStrategy eventHandlers;
+    private final EventHandlersRepository eventHandlers;
     private final MethodCallsHierarchyBuilder methodCallsHierarchy;
     private AggregatesRepository aggregates;
     private final CommandHandlersRepository commandHandlers;
 
     public AxonFlowBuilder(MethodCallsHierarchyBuilder methodCallsHierarchy,
-                           EventHandlerIdentificationStrategy eventHandlers,
+                           EventHandlersRepository eventHandlers,
                            CommandHandlersRepository commandHandlers,
                            AggregatesRepository aggregates) {
         this.eventHandlers = eventHandlers;

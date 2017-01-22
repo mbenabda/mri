@@ -10,6 +10,9 @@ import org.mri.output.PlantUmlFormat;
 import org.mri.output.ToStringFormat;
 import org.mri.processors.*;
 import org.mri.repositories.*;
+import org.mri.repositories.eventHandlers.EventHandlersGroupingByEventNameStrategy;
+import org.mri.repositories.eventHandlers.NoEventHandlersGroupingStrategy;
+import org.mri.repositories.eventHandlers.EventHandlersRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
@@ -114,9 +117,13 @@ public class ShowAxonFlow {
     private void printAxonFlow(Launcher launcher, PrintStream printStream) throws Exception {
         ClassHierarchyRepository classHierarchy = new ClassHierarchyRepository();
         MethodExecutionRepository methodExecutions = new MethodExecutionRepository();
-        EventHandlersRepository eventHandlers = new EventHandlersRepository();
         CommandHandlersRepository commandHandlers = new CommandHandlersRepository();
         AggregatesRepository aggregates = new AggregatesRepository();
+        EventHandlersRepository eventHandlers = new EventHandlersRepository(
+            matchEventsByName
+                ? new EventHandlersGroupingByEventNameStrategy()
+                : new NoEventHandlersGroupingStrategy()
+        );
 
         QueueProcessingManager queueProcessingManager = new QueueProcessingManager(launcher.getFactory());
         queueProcessingManager.addProcessor(new ClassHierarcyProcessor(classHierarchy));
@@ -128,9 +135,7 @@ public class ShowAxonFlow {
 
         AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(
             new MethodCallsHierarchyBuilder(methodExecutions, classHierarchy),
-            matchEventsByName
-                ? new EventHandlerIdentificationByNameStrategy(eventHandlers.findAll())
-                : new EventHandlerIdentificationBySignatureStrategy(eventHandlers.findAll()),
+            eventHandlers,
             commandHandlers,
             aggregates
         );

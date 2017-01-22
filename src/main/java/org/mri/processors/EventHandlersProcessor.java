@@ -2,7 +2,7 @@ package org.mri.processors;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import org.mri.repositories.EventHandlersRepository;
+import org.mri.repositories.eventHandlers.EventHandlersRepository;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtAnnotation;
 import spoon.reflect.declaration.CtParameter;

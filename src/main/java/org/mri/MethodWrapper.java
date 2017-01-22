@@ -26,10 +26,6 @@ public class MethodWrapper {
         this(executableReference.getDeclaringType(), executableReference.getDeclaration());
     }
 
-    public CtTypeReference type() {
-        return type;
-    }
-
     public CtExecutable method() {
         return method;
     }

@@ -155,7 +155,7 @@ public class ShowAxonFlow {
                 printer.print(node, printStream);
             }
         } catch (MethodNotFoundException e) {
-            printStream.println("No method containing `" + methodName + "` found.");
+            printStream.println("No method containing `" + e.getMethodName() + "` found.");
         }
     }
 }

@@ -1,7 +1,5 @@
 package org.mri.processors.axon2;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import org.mri.repositories.eventHandlers.EventHandlersRepository;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtAnnotation;
@@ -11,6 +9,7 @@ import spoon.support.reflect.declaration.CtMethodImpl;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class EventHandlersProcessor extends AbstractProcessor<CtMethodImpl> {
     private static final String AXON_EVENT_HANDLER = "org.axonframework.eventhandling.annotation.EventHandler";
@@ -37,18 +36,11 @@ public class EventHandlersProcessor extends AbstractProcessor<CtMethodImpl> {
     }
 
     private boolean isEventHandler(CtMethodImpl method) {
-        return Iterables.tryFind(
-            method.getAnnotations(),
-            isEventHandlerAnnotation()
-        ).isPresent();
+        return method.getAnnotations().stream()
+            .anyMatch(isEventHandlerAnnotation());
     }
 
     private Predicate<CtAnnotation> isEventHandlerAnnotation() {
-        return new Predicate<CtAnnotation>() {
-            @Override
-            public boolean apply(CtAnnotation annotation) {
-                return EVENT_HANDLER_ANNOTATIONS.contains(annotation.getActualAnnotation().annotationType().getName());
-            }
-        };
+        return annotation -> EVENT_HANDLER_ANNOTATIONS.contains(annotation.getActualAnnotation().annotationType().getName());
     }
 }

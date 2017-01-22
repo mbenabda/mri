@@ -14,10 +14,6 @@ public class CommandHandlersRepository {
         this.handlerPerCommandType = new HashMap<>();
     }
 
-    public Map<CtTypeReference, CtMethodImpl> findAll() {
-        return handlerPerCommandType;
-    }
-
     public void add(CtTypeReference commandType, CtMethodImpl handler) {
         handlerPerCommandType.put(commandType, handler);
     }

@@ -1,13 +1,15 @@
 package org.mri;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import org.mri.repositories.ClassHierarchyRepository;
 import org.mri.repositories.MethodExecutionRepository;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 
 import java.util.*;
+import java.util.function.Predicate;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 public class MethodCallsHierarchyBuilder {
     private final Map<MethodWrapper, List<CtExecutableReference>> callList;
@@ -18,41 +20,37 @@ public class MethodCallsHierarchyBuilder {
         this.classHierarchy = classHierarchyRepository.findAll();
     }
 
-    public ArrayList<CtExecutableReference> referencesOfMethod(String methodName) {
-        ArrayList<CtExecutableReference > result = new ArrayList<>();
-        for (CtExecutableReference executableReference : findExecutablesForMethodName(methodName, callList)) {
-            result.add(executableReference);
-        }
-        return result;
+    public Collection<CtExecutableReference> referencesOfMethod(String methodName) {
+        return findExecutablesForMethodName(methodName, callList);
     }
 
     public Iterable<MethodCall> callsInBlock(CtExecutableReference block, Predicate<MethodCall> predicate) {
         MethodCall call = buildCalleesMethodHierarchy(block);
-        return Iterables.filter(call.asList(), predicate);
+        return call.asList().stream()
+            .filter(predicate)
+            .collect(toSet());
     }
 
     private static List<CtExecutableReference> findExecutablesForMethodName(String methodName, Map<MethodWrapper, List<CtExecutableReference>> callList) {
-        ArrayList<CtExecutableReference> result = new ArrayList<>();
-        for (MethodWrapper methodWrapper : callList.keySet()) {
-            CtExecutableReference executableReference = methodWrapper.method().getReference();
-            String executableReferenceMethodName = ASTHelpers.signatureOf(executableReference);
-            if (executableReferenceMethodName.equals(methodName)
+        return callList.keySet().stream()
+            .map(methodWrapper -> methodWrapper.method().getReference())
+            .filter(executableReference -> {
+                String executableReferenceMethodName = ASTHelpers.signatureOf(executableReference);
+                return (executableReferenceMethodName.equals(methodName)
                     || executableReference.toString().contains(methodName)
-                    || executableReference.toString().matches(methodName)) {
-                result.add(executableReference);
-            }
-        }
-        return result;
+                    || executableReference.toString().matches(methodName));
+            })
+            .collect(toList());
     }
 
     private MethodCall buildCalleesMethodHierarchy(CtExecutableReference executableReference) {
         MethodCall methodCall = new MethodCall(executableReference);
-        buildCallHierarchy(executableReference, new HashSet<CtExecutableReference>(), methodCall);
+        buildCallHierarchy(executableReference, new HashSet<>(), methodCall);
         return methodCall;
     }
 
     private void buildCallHierarchy(
-            CtExecutableReference executableReference, Set<CtExecutableReference> alreadyVisited, MethodCall methodCall) {
+        CtExecutableReference executableReference, Set<CtExecutableReference> alreadyVisited, MethodCall methodCall) {
         if (alreadyVisited.contains(executableReference)) {
             return;
         }

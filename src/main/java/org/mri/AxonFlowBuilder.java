@@ -1,6 +1,5 @@
 package org.mri;
 
-import com.google.common.base.Predicate;
 import org.mri.repositories.AggregatesRepository;
 import org.mri.repositories.CommandHandlersRepository;
 import org.mri.repositories.eventHandlers.EventHandlersRepository;
@@ -9,7 +8,9 @@ import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.declaration.CtMethodImpl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class AxonFlowBuilder {
     private final EventHandlersRepository eventHandlers;
@@ -28,16 +29,16 @@ public class AxonFlowBuilder {
     }
 
     List<AxonNode> buildFlow(String methodName) throws MethodNotFoundException {
-        ArrayList<CtExecutableReference> methodReferences = methodCallsHierarchy.referencesOfMethod(methodName);
+        Collection<CtExecutableReference> methodReferences = methodCallsHierarchy.referencesOfMethod(methodName);
         if (methodReferences.isEmpty()) {
             throw new MethodNotFoundException(methodName);
         }
 
         List<AxonNode> nodes = new ArrayList<>();
-        for (CtExecutableReference each : methodReferences) {
-            AxonNode root = new AxonNode(AxonNode.Type.CONTROLLER, each);
-            nodes.add(root);
-            buildCommandFlow(root);
+        for (CtExecutableReference reference : methodReferences) {
+            AxonNode node = new AxonNode(AxonNode.Type.CONTROLLER, reference);
+            nodes.add(node);
+            buildCommandFlow(node);
         }
         return nodes;
     }
@@ -84,38 +85,16 @@ public class AxonFlowBuilder {
     }
 
     private Predicate<MethodCall> ofMethodsDeclaredIn(final Predicate<CtTypeReference> declaringTypeSpecification) {
-        return new Predicate<MethodCall>() {
-            @Override
-            public boolean apply(MethodCall call) {
-                return declaringTypeSpecification.apply(call.getDeclaringType());
-            }
-        };
+        return call -> declaringTypeSpecification.test(call.getDeclaringType());
     }
 
     private Predicate<CtTypeReference> aCommand() {
-        return new Predicate<CtTypeReference>() {
-            @Override
-            public boolean apply(CtTypeReference type) {
-                return commandHandlers.isACommand(type);
-            }
-        };
+        return commandHandlers::isACommand;
     }
 
-    private Predicate<CtTypeReference> anAggregate() {
-        return new Predicate<CtTypeReference>() {
-            @Override
-            public boolean apply(CtTypeReference type) {
-                return aggregates.isAnAggregate(type);
-            }
-        };
-    }
+    private Predicate<CtTypeReference> anAggregate() { return aggregates::isAnAggregate; }
 
     private Predicate<CtTypeReference> anEvent() {
-        return new Predicate<CtTypeReference>() {
-            @Override
-            public boolean apply(CtTypeReference type) {
-                return eventHandlers.isAnEvent(type);
-            }
-        };
+        return eventHandlers::isAnEvent;
     }
 }

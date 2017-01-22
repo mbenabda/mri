@@ -1,6 +1,5 @@
 package org.mri;
 
-import com.google.common.collect.ImmutableList;
 import spoon.reflect.reference.CtExecutableReference;
 
 import java.util.ArrayList;
@@ -38,7 +37,9 @@ public class AxonNode {
     }
 
     public List<AxonNode> children() {
-        return ImmutableList.copyOf(children);
+        List<AxonNode> all = new ArrayList<>();
+        all.addAll(children);
+        return all;
     }
 
     public List<AxonNode> descendants() {

@@ -12,10 +12,6 @@ public class AggregatesRepository {
         this.aggregates = new ArrayList<>();
     }
 
-    public List<CtTypeReference> findAll() {
-        return aggregates;
-    }
-
     public void add(CtTypeReference aggregateType) {
         aggregates.add(aggregateType);
     }

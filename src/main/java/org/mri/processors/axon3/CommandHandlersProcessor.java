@@ -9,7 +9,7 @@ import spoon.reflect.declaration.CtParameter;
 import spoon.support.reflect.declaration.CtMethodImpl;
 
 public class CommandHandlersProcessor extends AbstractProcessor<CtMethodImpl> {
-    private static final String AXON_COMMAND_HANDLER = "@org.axonframework.commandhandling.CommandHandler";
+    private static final String AXON_COMMAND_HANDLER = "org.axonframework.commandhandling.CommandHandler";
 
     private CommandHandlersRepository repository;
 
@@ -36,7 +36,7 @@ public class CommandHandlersProcessor extends AbstractProcessor<CtMethodImpl> {
         return new Predicate<CtAnnotation>() {
             @Override
             public boolean apply(CtAnnotation annotation) {
-                return AXON_COMMAND_HANDLER.equals(annotation.getSignature());
+                return AXON_COMMAND_HANDLER.equals(annotation.getActualAnnotation().annotationType().getName());
             }
         };
     }

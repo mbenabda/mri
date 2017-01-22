@@ -8,7 +8,7 @@ import spoon.reflect.declaration.CtAnnotation;
 import spoon.support.reflect.declaration.CtFieldImpl;
 
 public class AggregatesProcessor extends AbstractProcessor<CtFieldImpl> {
-    private static final String AXON_AGGREGATE_IDENTIFIER_ANNOTATION = "@org.axonframework.eventsourcing.annotation.AggregateIdentifier";
+    private static final String AXON_AGGREGATE_IDENTIFIER_ANNOTATION = "org.axonframework.eventsourcing.annotation.AggregateIdentifier";
     private AggregatesRepository repository;
 
     public AggregatesProcessor(AggregatesRepository repository) {
@@ -33,7 +33,7 @@ public class AggregatesProcessor extends AbstractProcessor<CtFieldImpl> {
         return new Predicate<CtAnnotation>() {
             @Override
             public boolean apply(CtAnnotation annotation) {
-                return AXON_AGGREGATE_IDENTIFIER_ANNOTATION.equals(annotation.getSignature());
+                return AXON_AGGREGATE_IDENTIFIER_ANNOTATION.equals(annotation.getActualAnnotation().annotationType().getName());
             }
         };
     }

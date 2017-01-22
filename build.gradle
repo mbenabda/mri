@@ -4,8 +4,8 @@ apply plugin: 'maven'
 group = 'org.mri'
 version = '1.0.3'
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
      maven { url "http://repo.maven.apache.org/maven2" }
@@ -13,8 +13,8 @@ repositories {
 
 dependencies {
     compile group: 'commons-io', name: 'commons-io', version:'2.1'
-    compile group: 'fr.inria.gforge.spoon', name: 'spoon-core', version:'4.1.0'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.1'
+    compile group: 'fr.inria.gforge.spoon', name: 'spoon-core', version:'5.5.0'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version:'3.5'
     compile group: 'args4j', name: 'args4j', version:'2.0.29'
     compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.7'
     compile group: 'org.slf4j', name: 'slf4j-simple', version:'1.7.7'
@@ -26,6 +26,7 @@ jar {
     manifest {
         attributes("Class-Path": configurations.compile.collect { it.getName() }.join(' '),
                    "Main-Class": "org.mri.ShowAxonFlow")
+        exclude 'META-INF/*.RSA', 'META-INF/*.SF','META-INF/*.DSA'
     }
     from(configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }) {
         exclude "log4j.properties"

@@ -13,9 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class EventHandlersProcessor extends AbstractProcessor<CtMethodImpl> {
-    private static final String AXON_EVENT_HANDLER = "@org.axonframework.eventhandling.annotation.EventHandler";
-    private static final String AXON_EVENT_SOURCING_HANDLER = "@org.axonframework.eventsourcing.annotation.EventSourcingHandler";
-    private static final String AXON_SAGA_HANDLER = "@org.axonframework.saga.annotation.SagaEventHandler";
+    private static final String AXON_EVENT_HANDLER = "org.axonframework.eventhandling.annotation.EventHandler";
+    private static final String AXON_EVENT_SOURCING_HANDLER = "org.axonframework.eventsourcing.annotation.EventSourcingHandler";
+    private static final String AXON_SAGA_HANDLER = "org.axonframework.saga.annotation.SagaEventHandler";
     private static final List<String> EVENT_HANDLER_ANNOTATIONS = Arrays.asList(
         AXON_EVENT_HANDLER,
         AXON_EVENT_SOURCING_HANDLER,
@@ -47,7 +47,7 @@ public class EventHandlersProcessor extends AbstractProcessor<CtMethodImpl> {
         return new Predicate<CtAnnotation>() {
             @Override
             public boolean apply(CtAnnotation annotation) {
-                return EVENT_HANDLER_ANNOTATIONS.contains(annotation.getSignature());
+                return EVENT_HANDLER_ANNOTATIONS.contains(annotation.getActualAnnotation().annotationType().getName());
             }
         };
     }

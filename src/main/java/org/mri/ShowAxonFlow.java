@@ -133,13 +133,12 @@ public class ShowAxonFlow {
                 : new NoEventHandlersGroupingStrategy()
         );
 
-        QueueProcessingManager queueProcessingManager = new QueueProcessingManager(launcher.getFactory());
-        queueProcessingManager.addProcessor(new ClassHierarcyProcessor(classHierarchy));
-        queueProcessingManager.addProcessor(new MethodExecutionProcessor(methodExecutions));
-        queueProcessingManager.addProcessor(axonVersion.eventHandlersProcessor(eventHandlers));
-        queueProcessingManager.addProcessor(axonVersion.commandHandlersProcessor(commandHandlers));
-        queueProcessingManager.addProcessor(axonVersion.aggregatesProcessor(aggregates));
-        queueProcessingManager.process();
+        launcher.addProcessor(new ClassHierarcyProcessor(classHierarchy));
+        launcher.addProcessor(new MethodExecutionProcessor(methodExecutions));
+        launcher.addProcessor(axonVersion.eventHandlersProcessor(eventHandlers));
+        launcher.addProcessor(axonVersion.commandHandlersProcessor(commandHandlers));
+        launcher.addProcessor(axonVersion.aggregatesProcessor(aggregates));
+        launcher.process();
 
         AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(
             new MethodCallsHierarchyBuilder(methodExecutions, classHierarchy),

@@ -1,4 +1,4 @@
-package org.mri.repositories;
+package org.mri.source;
 
 import org.mri.MethodWrapper;
 import spoon.reflect.reference.CtExecutableReference;
@@ -9,10 +9,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MethodExecutionRepository {
+public class MethodsExecutions {
     private Map<MethodWrapper, List<CtExecutableReference>> callsByCaller;
 
-    public MethodExecutionRepository() {
+    public MethodsExecutions() {
         this.callsByCaller = new HashMap<>();
     }
 

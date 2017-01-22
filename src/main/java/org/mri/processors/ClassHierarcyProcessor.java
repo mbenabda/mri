@@ -1,14 +1,14 @@
 package org.mri.processors;
 
-import org.mri.repositories.ClassHierarchyRepository;
+import org.mri.source.ClassesHierarchy;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.declaration.CtClassImpl;
 
 public class ClassHierarcyProcessor extends AbstractProcessor<CtClassImpl> {
-    private ClassHierarchyRepository repository;
+    private ClassesHierarchy repository;
 
-    public ClassHierarcyProcessor(ClassHierarchyRepository repository) {
+    public ClassHierarcyProcessor(ClassesHierarchy repository) {
         super();
         this.repository = repository;
     }

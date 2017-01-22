@@ -1,6 +1,6 @@
 package org.mri.processors.axon2;
 
-import org.mri.repositories.eventHandlers.EventHandlersRepository;
+import org.mri.source.eventHandlers.EventHandlers;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtAnnotation;
 import spoon.reflect.declaration.CtParameter;
@@ -20,9 +20,9 @@ public class EventHandlersProcessor extends AbstractProcessor<CtMethodImpl> {
         AXON_EVENT_SOURCING_HANDLER,
         AXON_SAGA_HANDLER
     );
-    private EventHandlersRepository repository;
+    private EventHandlers repository;
 
-    public EventHandlersProcessor(EventHandlersRepository repository) {
+    public EventHandlersProcessor(EventHandlers repository) {
         super();
         this.repository = repository;
     }

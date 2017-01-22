@@ -1,6 +1,6 @@
 package org.mri.output;
 
-import org.mri.AxonNode;
+import org.mri.flow.AxonNode;
 
 import java.io.PrintStream;
 

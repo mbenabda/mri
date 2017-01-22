@@ -1,4 +1,4 @@
-package org.mri;
+package org.mri.flow;
 
 import spoon.reflect.reference.CtExecutableReference;
 
@@ -14,7 +14,7 @@ public class AxonNode {
     private final CtExecutableReference reference;
     private List<AxonNode> children = new ArrayList<>();
 
-    public AxonNode(Type type, CtExecutableReference reference) {
+    AxonNode(Type type, CtExecutableReference reference) {
         this.type = type;
         this.reference = reference;
     }

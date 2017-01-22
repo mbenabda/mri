@@ -1,5 +1,6 @@
-package org.mri.repositories.eventHandlers;
+package org.mri.source.eventHandlers;
 
+import org.mri.source.eventHandlers.grouping.EventHandlersGroupingStrategy;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.declaration.CtMethodImpl;
 
@@ -8,12 +9,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EventHandlersRepository {
+public class EventHandlers {
 
     private final Map<Object, List<CtMethodImpl>> handlersPerEventType;
     private EventHandlersGroupingStrategy groupingStrategy;
 
-    public EventHandlersRepository(EventHandlersGroupingStrategy groupingStrategy) {
+    public EventHandlers(EventHandlersGroupingStrategy groupingStrategy) {
         this.handlersPerEventType = new HashMap<>();
         this.groupingStrategy = groupingStrategy;
     }

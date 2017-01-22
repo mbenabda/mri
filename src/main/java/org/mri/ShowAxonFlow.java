@@ -4,25 +4,23 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.args4j.*;
 import org.kohsuke.args4j.spi.StringArrayOptionHandler;
+import org.mri.flow.AxonFlowBuilder;
+import org.mri.flow.AxonNode;
 import org.mri.output.DotFormat;
 import org.mri.output.OutputFormat;
 import org.mri.output.PlantUmlFormat;
 import org.mri.output.ToStringFormat;
 import org.mri.processors.AxonVersion;
 import org.mri.processors.ClassHierarcyProcessor;
-import org.mri.processors.MethodExecutionProcessor;
-import org.mri.repositories.AggregatesRepository;
-import org.mri.repositories.ClassHierarchyRepository;
-import org.mri.repositories.CommandHandlersRepository;
-import org.mri.repositories.MethodExecutionRepository;
-import org.mri.repositories.eventHandlers.EventHandlersGroupingByEventNameStrategy;
-import org.mri.repositories.eventHandlers.EventHandlersRepository;
-import org.mri.repositories.eventHandlers.NoEventHandlersGroupingStrategy;
+import org.mri.processors.MethodsExecutionsProcessor;
+import org.mri.source.*;
+import org.mri.source.eventHandlers.grouping.GroupEventHandlersByEventName;
+import org.mri.source.eventHandlers.EventHandlers;
+import org.mri.source.eventHandlers.grouping.NoOp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
 import spoon.compiler.ModelBuildingException;
-import spoon.support.QueueProcessingManager;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -123,25 +121,25 @@ public class ShowAxonFlow {
     }
 
     private void printAxonFlow(Launcher launcher, PrintStream printStream) throws Exception {
-        ClassHierarchyRepository classHierarchy = new ClassHierarchyRepository();
-        MethodExecutionRepository methodExecutions = new MethodExecutionRepository();
-        CommandHandlersRepository commandHandlers = new CommandHandlersRepository();
-        AggregatesRepository aggregates = new AggregatesRepository();
-        EventHandlersRepository eventHandlers = new EventHandlersRepository(
+        ClassesHierarchy classHierarchy = new ClassesHierarchy();
+        MethodsExecutions methodsExecutions = new MethodsExecutions();
+        CommandHandlers commandHandlers = new CommandHandlers();
+        Aggregates aggregates = new Aggregates();
+        EventHandlers eventHandlers = new EventHandlers(
             matchEventsByName
-                ? new EventHandlersGroupingByEventNameStrategy()
-                : new NoEventHandlersGroupingStrategy()
+                ? new GroupEventHandlersByEventName()
+                : new NoOp()
         );
 
         launcher.addProcessor(new ClassHierarcyProcessor(classHierarchy));
-        launcher.addProcessor(new MethodExecutionProcessor(methodExecutions));
+        launcher.addProcessor(new MethodsExecutionsProcessor(methodsExecutions));
         launcher.addProcessor(axonVersion.eventHandlersProcessor(eventHandlers));
         launcher.addProcessor(axonVersion.commandHandlersProcessor(commandHandlers));
         launcher.addProcessor(axonVersion.aggregatesProcessor(aggregates));
         launcher.process();
 
         AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(
-            new MethodCallsHierarchyBuilder(methodExecutions, classHierarchy),
+            new MethodCallsHierarchy(methodsExecutions, classHierarchy),
             eventHandlers,
             commandHandlers,
             aggregates

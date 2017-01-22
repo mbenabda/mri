@@ -1,14 +1,14 @@
-package org.mri.repositories;
+package org.mri.source;
 
 import spoon.reflect.reference.CtTypeReference;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class AggregatesRepository {
+public class Aggregates {
     private List<CtTypeReference> aggregates = null;
 
-    public AggregatesRepository() {
+    public Aggregates() {
         this.aggregates = new ArrayList<>();
     }
 

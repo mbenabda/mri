@@ -1,8 +1,8 @@
-package org.mri.repositories.eventHandlers;
+package org.mri.source.eventHandlers.grouping;
 
 import spoon.reflect.reference.CtTypeReference;
 
-public class EventHandlersGroupingByEventNameStrategy implements EventHandlersGroupingStrategy {
+public class GroupEventHandlersByEventName implements EventHandlersGroupingStrategy {
     @Override
     public Object groupKey(CtTypeReference eventType) {
         return eventType.getSimpleName();

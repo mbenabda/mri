@@ -1,4 +1,4 @@
-package org.mri.repositories.eventHandlers;
+package org.mri.source.eventHandlers.grouping;
 
 import spoon.reflect.reference.CtTypeReference;
 

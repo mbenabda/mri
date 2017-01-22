@@ -1,4 +1,4 @@
-package org.mri.repositories;
+package org.mri.source;
 
 import spoon.reflect.reference.CtTypeReference;
 
@@ -7,15 +7,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ClassHierarchyRepository {
+import static java.util.Collections.emptySet;
+
+public class ClassesHierarchy {
     private final Map<CtTypeReference, Set<CtTypeReference>> implementors;
 
-    public ClassHierarchyRepository() {
+    public ClassesHierarchy() {
         this.implementors = new HashMap<>();
-    }
-
-    public Map<CtTypeReference, Set<CtTypeReference>> findAll() {
-        return implementors;
     }
 
     public void add(CtTypeReference clazz, CtTypeReference superClass) {
@@ -25,5 +23,9 @@ public class ClassHierarchyRepository {
             implementors.put(superClass, subclasses);
         }
         subclasses.add(clazz);
+    }
+
+    public Set<CtTypeReference> subclassesOf(CtTypeReference type) {
+        return implementors.getOrDefault(type, emptySet());
     }
 }

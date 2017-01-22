@@ -1,6 +1,6 @@
 package org.mri.processors.axon3;
 
-import org.mri.repositories.CommandHandlersRepository;
+import org.mri.source.CommandHandlers;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.declaration.CtAnnotation;
 import spoon.reflect.declaration.CtParameter;
@@ -11,9 +11,9 @@ import java.util.function.Predicate;
 public class CommandHandlersProcessor extends AbstractProcessor<CtMethodImpl> {
     private static final String AXON_COMMAND_HANDLER = "org.axonframework.commandhandling.CommandHandler";
 
-    private CommandHandlersRepository repository;
+    private CommandHandlers repository;
 
-    public CommandHandlersProcessor(CommandHandlersRepository repository) {
+    public CommandHandlersProcessor(CommandHandlers repository) {
         super();
         this.repository = repository;
     }

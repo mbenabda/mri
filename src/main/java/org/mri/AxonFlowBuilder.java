@@ -43,7 +43,7 @@ public class AxonFlowBuilder {
     }
 
     private void buildCommandFlow(AxonNode node) {
-        for (MethodCall call : this.methodCallsHierarchy.callsInBlock(node.reference(), declaredIn(aCommand()))) {
+        for (MethodCall call : this.methodCallsHierarchy.callsInBlock(node.reference(), ofMethodsDeclaredIn(aCommand()))) {
             CtExecutableReference callReference = call.reference();
             CtTypeReference command = call.getDeclaringType();
 
@@ -61,7 +61,7 @@ public class AxonFlowBuilder {
     }
 
     private void buildAggregateFlow(AxonNode node) {
-        for (MethodCall call : this.methodCallsHierarchy.callsInBlock(node.reference(), declaredIn(anAggregate()))) {
+        for (MethodCall call : this.methodCallsHierarchy.callsInBlock(node.reference(), ofMethodsDeclaredIn(anAggregate()))) {
             AxonNode aggregateNode = new AxonNode(AxonNode.Type.AGGREGATE, call.reference());
             buildEventFlow(aggregateNode);
             if (aggregateNode.hasChildren()) {
@@ -71,7 +71,7 @@ public class AxonFlowBuilder {
     }
 
     private AxonNode buildEventFlow(AxonNode node) {
-        for (MethodCall eventConstruction : this.methodCallsHierarchy.callsInBlock(node.reference(), declaredIn(anEvent()))) {
+        for (MethodCall eventConstruction : this.methodCallsHierarchy.callsInBlock(node.reference(), ofMethodsDeclaredIn(anEvent()))) {
             AxonNode eventNode = new AxonNode(AxonNode.Type.EVENT, eventConstruction.reference());
             node.add(eventNode);
             for (CtMethodImpl eventHandler : eventHandlers.findEventHandlers(eventNode.reference().getDeclaringType())) {
@@ -83,7 +83,7 @@ public class AxonFlowBuilder {
         return node;
     }
 
-    private Predicate<MethodCall> declaredIn(final Predicate<CtTypeReference> declaringTypeSpecification) {
+    private Predicate<MethodCall> ofMethodsDeclaredIn(final Predicate<CtTypeReference> declaringTypeSpecification) {
         return new Predicate<MethodCall>() {
             @Override
             public boolean apply(MethodCall call) {
@@ -96,7 +96,7 @@ public class AxonFlowBuilder {
         return new Predicate<CtTypeReference>() {
             @Override
             public boolean apply(CtTypeReference type) {
-                return commandHandlers.isCommand(type);
+                return commandHandlers.isACommand(type);
             }
         };
     }
@@ -105,7 +105,7 @@ public class AxonFlowBuilder {
         return new Predicate<CtTypeReference>() {
             @Override
             public boolean apply(CtTypeReference type) {
-                return aggregates.isAggregate(type);
+                return aggregates.isAnAggregate(type);
             }
         };
     }

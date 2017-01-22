@@ -1,4 +1,4 @@
-package org.mri.processors;
+package org.mri.processors.axon3;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -9,7 +9,7 @@ import spoon.reflect.declaration.CtParameter;
 import spoon.support.reflect.declaration.CtMethodImpl;
 
 public class CommandHandlersProcessor extends AbstractProcessor<CtMethodImpl> {
-    private static final String AXON_COMMAND_HANDLER = "@org.axonframework.commandhandling.annotation.CommandHandler";
+    private static final String AXON_COMMAND_HANDLER = "@org.axonframework.commandhandling.CommandHandler";
 
     private CommandHandlersRepository repository;
 

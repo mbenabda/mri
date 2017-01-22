@@ -26,7 +26,7 @@ public class CommandHandlersRepository {
         return handlerPerCommandType.get(commandType);
     }
 
-    public boolean isCommand(CtTypeReference candidate) {
+    public boolean isACommand(CtTypeReference candidate) {
         return handlerOfCommand(candidate) != null;
     }
 }

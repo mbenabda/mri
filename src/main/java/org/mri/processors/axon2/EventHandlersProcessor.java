@@ -1,4 +1,4 @@
-package org.mri.processors;
+package org.mri.processors.axon2;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;

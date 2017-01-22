@@ -20,7 +20,7 @@ public class AggregatesRepository {
         aggregates.add(aggregateType);
     }
 
-    public boolean isAggregate(CtTypeReference candidate) {
+    public boolean isAnAggregate(CtTypeReference candidate) {
         return aggregates.contains(candidate);
     }
 }

@@ -1,4 +1,4 @@
-package org.mri.processors;
+package org.mri.processors.axon3;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -8,7 +8,8 @@ import spoon.reflect.declaration.CtAnnotation;
 import spoon.support.reflect.declaration.CtFieldImpl;
 
 public class AggregatesProcessor extends AbstractProcessor<CtFieldImpl> {
-    private static final String AXON_AGGREGATE_IDENTIFIER_ANNOTATION = "@org.axonframework.eventsourcing.annotation.AggregateIdentifier";
+
+    private static final String AXON_AGGREGATE_IDENTIFIER_ANNOTATION = "@org.axonframework.commandhandling.model.AggregateIdentifier";
     private AggregatesRepository repository;
 
     public AggregatesProcessor(AggregatesRepository repository) {

@@ -11,7 +11,7 @@ import org.mri.output.OutputFormat;
 import org.mri.output.PlantUmlFormat;
 import org.mri.output.ToStringFormat;
 import org.mri.processors.AxonVersion;
-import org.mri.processors.ClassHierarcyProcessor;
+import org.mri.processors.ClassHierarchyProcessor;
 import org.mri.processors.MethodsExecutionsProcessor;
 import org.mri.source.*;
 import org.mri.source.eventHandlers.grouping.GroupEventHandlersByEventName;
@@ -131,7 +131,7 @@ public class ShowAxonFlow {
                 : new NoOp()
         );
 
-        launcher.addProcessor(new ClassHierarcyProcessor(classHierarchy));
+        launcher.addProcessor(new ClassHierarchyProcessor(classHierarchy));
         launcher.addProcessor(new MethodsExecutionsProcessor(methodsExecutions));
         launcher.addProcessor(axonVersion.eventHandlersProcessor(eventHandlers));
         launcher.addProcessor(axonVersion.commandHandlersProcessor(commandHandlers));

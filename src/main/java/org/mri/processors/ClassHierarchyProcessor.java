@@ -5,10 +5,10 @@ import spoon.processing.AbstractProcessor;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.reflect.declaration.CtClassImpl;
 
-public class ClassHierarcyProcessor extends AbstractProcessor<CtClassImpl> {
+public class ClassHierarchyProcessor extends AbstractProcessor<CtClassImpl> {
     private ClassesHierarchy repository;
 
-    public ClassHierarcyProcessor(ClassesHierarchy repository) {
+    public ClassHierarchyProcessor(ClassesHierarchy repository) {
         super();
         this.repository = repository;
     }

@@ -9,7 +9,11 @@ import org.mri.output.OutputFormat;
 import org.mri.output.PlantUmlFormat;
 import org.mri.output.ToStringFormat;
 import org.mri.processors.*;
-import org.mri.repositories.*;
+import org.mri.repositories.AggregatesRepository;
+import org.mri.repositories.ClassHierarchyRepository;
+import org.mri.repositories.CommandHandlersRepository;
+import org.mri.repositories.MethodExecutionRepository;
+import org.mri.repositories.EventHandlersRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
@@ -134,7 +138,6 @@ public class ShowAxonFlow {
 
         Map<CtTypeReference, Set<CtTypeReference>> classHierarchy = classHierarchyRepository.findAll();
         Map<MethodWrapper, List<CtExecutableReference>> callList = methodExecutionRepository.findAll();
-        Map<CtTypeReference, List<CtMethodImpl>> eventHandlers = eventHandlersRepository.findAll();
         Map<CtTypeReference, CtMethodImpl> commandHandlers = commandHandlersRepository.findAll();
         List<CtTypeReference> aggregates = aggregatesRepository.findAll();
 
@@ -142,7 +145,15 @@ public class ShowAxonFlow {
         if (methodReferences.isEmpty()) {
             printStream.println("No method containing `" + methodName + "` found.");
         }
-        AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(classHierarchy, callList, eventHandlers, commandHandlers, aggregates, matchEventsByName);
+
+        AxonFlowBuilder axonFlowBuilder = new AxonFlowBuilder(
+            new MethodCallHierarchyBuilder(callList, classHierarchy),
+            matchEventsByName
+                ? new EventHandlerIdentificationByNameStrategy(eventHandlersRepository.findAll())
+                : new EventHandlerIdentificationBySignatureStrategy(eventHandlersRepository.findAll()),
+            commandHandlers,
+            aggregates
+        );
         List<AxonNode> flow = axonFlowBuilder.buildFlow(methodReferences);
 
         OutputFormat printer = format.printer();

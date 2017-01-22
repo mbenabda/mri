@@ -17,20 +17,14 @@ public class AxonFlowBuilder {
     private final MethodCallHierarchyBuilder callHierarchyBuilder;
     private List<CtTypeReference> aggregates;
 
-    public AxonFlowBuilder(Map<CtTypeReference, Set<CtTypeReference>> classHierarchy,
-                           Map<MethodWrapper, List<CtExecutableReference>> callList,
-                           Map<CtTypeReference, List<CtMethodImpl>> eventHandlers,
+    public AxonFlowBuilder(MethodCallHierarchyBuilder callHierarchyBuilder,
+                           EventHandlerIdentificationStrategy eventHandlers,
                            Map<CtTypeReference, CtMethodImpl> commandHandlers,
-                           List<CtTypeReference> aggregates, boolean matchEventsByName) {
+                           List<CtTypeReference> aggregates) {
         this.aggregates = aggregates;
-        if (matchEventsByName) {
-            this.eventHandlerIdentificationStrategy = new EventHandlerIdentificationByNameStrategy(eventHandlers);
-        }
-        else {
-            this.eventHandlerIdentificationStrategy = new EventHandlerIdentificationBySignatureStrategy(eventHandlers);
-        }
+        this.eventHandlerIdentificationStrategy = eventHandlers;
         this.commandHandlers = commandHandlers;
-        this.callHierarchyBuilder = new MethodCallHierarchyBuilder(callList, classHierarchy);
+        this.callHierarchyBuilder = callHierarchyBuilder;
     }
 
     List<AxonNode> buildFlow(ArrayList<CtExecutableReference> methodReferences) {

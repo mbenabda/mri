@@ -8,17 +8,17 @@ import java.util.Map;
 
 public class CommandHandlersRepository {
 
-    private final Map<CtTypeReference, CtMethodImpl> handlers;
+    private final Map<CtTypeReference, CtMethodImpl> handlerPerCommandType;
 
     public CommandHandlersRepository() {
-        this.handlers = new HashMap<>();
+        this.handlerPerCommandType = new HashMap<>();
     }
 
     public Map<CtTypeReference, CtMethodImpl> findAll() {
-        return handlers;
+        return handlerPerCommandType;
     }
 
     public void add(CtTypeReference commandType, CtMethodImpl handler) {
-        handlers.put(commandType, handler);
+        handlerPerCommandType.put(commandType, handler);
     }
 }

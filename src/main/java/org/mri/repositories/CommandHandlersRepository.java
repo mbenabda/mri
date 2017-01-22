@@ -21,4 +21,12 @@ public class CommandHandlersRepository {
     public void add(CtTypeReference commandType, CtMethodImpl handler) {
         handlerPerCommandType.put(commandType, handler);
     }
+
+    public CtMethodImpl handlerOfCommand(CtTypeReference commandType) {
+        return handlerPerCommandType.get(commandType);
+    }
+
+    public boolean isCommand(CtTypeReference candidate) {
+        return handlerOfCommand(candidate) != null;
+    }
 }

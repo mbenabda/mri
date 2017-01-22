@@ -9,11 +9,7 @@ import org.mri.output.OutputFormat;
 import org.mri.output.PlantUmlFormat;
 import org.mri.output.ToStringFormat;
 import org.mri.processors.*;
-import org.mri.repositories.AggregatesRepository;
-import org.mri.repositories.ClassHierarchyRepository;
-import org.mri.repositories.CommandHandlersRepository;
-import org.mri.repositories.MethodExecutionRepository;
-import org.mri.repositories.EventHandlersRepository;
+import org.mri.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
@@ -21,7 +17,6 @@ import spoon.compiler.ModelBuildingException;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.support.QueueProcessingManager;
-import spoon.support.reflect.declaration.CtMethodImpl;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -138,8 +133,6 @@ public class ShowAxonFlow {
 
         Map<CtTypeReference, Set<CtTypeReference>> classHierarchy = classHierarchyRepository.findAll();
         Map<MethodWrapper, List<CtExecutableReference>> callList = methodExecutionRepository.findAll();
-        Map<CtTypeReference, CtMethodImpl> commandHandlers = commandHandlersRepository.findAll();
-        List<CtTypeReference> aggregates = aggregatesRepository.findAll();
 
         ArrayList<CtExecutableReference> methodReferences = MethodCallHierarchyBuilder.forMethodName(methodName, callList, classHierarchy);
         if (methodReferences.isEmpty()) {
@@ -151,8 +144,8 @@ public class ShowAxonFlow {
             matchEventsByName
                 ? new EventHandlerIdentificationByNameStrategy(eventHandlersRepository.findAll())
                 : new EventHandlerIdentificationBySignatureStrategy(eventHandlersRepository.findAll()),
-            commandHandlers,
-            aggregates
+            commandHandlersRepository,
+            aggregatesRepository
         );
         List<AxonNode> flow = axonFlowBuilder.buildFlow(methodReferences);
 

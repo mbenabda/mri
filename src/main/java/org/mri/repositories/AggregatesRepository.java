@@ -19,4 +19,8 @@ public class AggregatesRepository {
     public void add(CtTypeReference aggregateType) {
         aggregates.add(aggregateType);
     }
+
+    public boolean isAggregate(CtTypeReference candidate) {
+        return aggregates.contains(candidate);
+    }
 }
